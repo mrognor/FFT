@@ -2,6 +2,9 @@
 #include <vector>
 #include <math.h>
 #include <bitset>
+#include <chrono>
+
+namespace sc = std::chrono;
 
 #define PI 3.14159265358979323846
 
@@ -11,16 +14,16 @@ struct complex
     double Im = 0;
 
     complex() {}
-    complex(double re) { Re = re; } 
+    complex(double re) { Re = re; }
     complex(double re, double im) { Re = re; Im = im; }
 
     friend complex operator+(const complex& A, const complex& B);
     friend complex operator-(const complex& A, const complex& B);
     friend complex operator*(const complex& A, const complex& B);
-    
+
     friend std::ostream& operator<<(std::ostream& stream, const complex& A);
 
-    double abs() { return sqrt(Re*Re + Im*Im);}
+    double abs() const { return sqrt(Re * Re + Im * Im); }
 };
 
 complex operator+(const complex& A, const complex& B)
@@ -74,7 +77,7 @@ std::vector<complex> FFT(const std::vector<T>& x)
     for (int64_t i = 0; i < arrLen; ++i)
     {
         int64_t newPos = InverseNumber(i, recursiveLen);
-    
+
         if (i < newPos && newPos != i)
         {
             complex srcVal = res[i];
@@ -103,36 +106,64 @@ std::vector<complex> FFT(const std::vector<T>& x)
         {
             for (int k = 0; k < halfElem; ++k)
             {
-                tmp[j + k] = res[j + k] + w[k] * res[j + k + halfElem]; 
-                tmp[j + halfElem + k] = res[j + k] - w[k] * res[j + k + halfElem]; 
+                tmp[j + k] = res[j + k] + w[k] * res[j + k + halfElem];
+                tmp[j + halfElem + k] = res[j + k] - w[k] * res[j + k + halfElem];
             }
         }
 
-        res = tmp;
+        res = tmp; // Optimize
         elemCount <<= 1;
     }
 
     return res;
 }
 
-std::vector<uint64_t> IFFT(const std::vector<complex>& X)
+std::vector<int64_t> IFFT(const std::vector<complex>& X, const uint64_t& dataLen)
 {
-    std::vector<uint64_t> res;
+    std::vector<int64_t> res;
     res.reserve(X.size());
     std::vector<complex> preRes = FFT<complex>(X);
 
-    res.push_back(round(preRes[0].abs()) / preRes.size());
-    for (uint64_t i = preRes.size() - 1; i > 0; --i)
-        res.push_back(round(preRes[i].abs()) / preRes.size());
-    
+    uint64_t count = 0;
+    uint64_t paddingLen = X.size() - dataLen;
+
+    if (paddingLen != 0)
+    {
+        for (auto it = preRes.rbegin(); it != preRes.rend(); ++it)
+        {
+            if (count >= paddingLen - 1 || paddingLen == 0) res.push_back(round(it->abs()) / preRes.size());
+            ++count;
+        }
+
+        res.pop_back();
+    }
+    else
+    {
+        res.push_back(round(preRes[0].abs()) / preRes.size());
+        for (auto it = preRes.rbegin(); it != preRes.rend(); ++it)
+        {
+            if (count < preRes.size() - 1) res.push_back(round(it->abs()) / preRes.size());
+            ++count;
+        } 
+    }
     return res;
 }
 
 int main()
 {
-    std::vector<complex> fft = FFT<int>({1, 2, 3, 4, 5, 6, 7, 8});
-    std::vector<uint64_t> ifft = IFFT(fft);
+    std::vector<int64_t> input;
+    std::vector<complex> fft;
+    std::vector<int64_t> ifft;
 
-    for (const auto& it : ifft)
-        std::cout << it << std::endl;
+    for (int64_t i = 0; i < 39000; ++i)
+        input.push_back(rand());
+
+    auto start(std::chrono::high_resolution_clock::now());
+
+    fft = FFT<int64_t>(input);
+
+    auto end(std::chrono::high_resolution_clock::now());
+    auto duration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
+
+    std::cout << "Time to operations: " << (long double)duration.count() / 1000000 << std::endl;
 }
