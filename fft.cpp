@@ -166,25 +166,20 @@ std::vector<int64_t> IFFT(const std::vector<complex>& X, const uint64_t& dataLen
     uint64_t count = 0;
     uint64_t paddingLen = X.size() - dataLen;
 
-    if (paddingLen != 0)
-    {
-        for (auto it = preRes.rbegin(); it != preRes.rend(); ++it)
-        {
-            if (count >= paddingLen - 1 || paddingLen == 0) res.push_back(round(it->abs()) / preRes.size());
-            ++count;
-        }
+    // If it was not padding append first element to start
+    if (paddingLen == 0) res.push_back(round(preRes[0].abs()) / preRes.size());
 
-        res.pop_back();
-    }
-    else
+    for (auto it = preRes.rbegin(); it != preRes.rend(); ++it)
     {
-        res.push_back(round(preRes[0].abs()) / preRes.size());
-        for (auto it = preRes.rbegin(); it != preRes.rend(); ++it)
-        {
-            if (count < preRes.size() - 1) res.push_back(round(it->abs()) / preRes.size());
-            ++count;
-        }
+        // If it was padding go throw padding and append only after that
+        // If it was not padding append all except last 
+        if ((paddingLen != 0 && count >= paddingLen - 1) || (paddingLen == 0 && count < preRes.size() - 1)) 
+            res.push_back(round(it->abs()) / preRes.size());
+        ++count;
     }
+    
+    // If it was padding remove last element
+    if (paddingLen != 0) res.pop_back();
     return res;
 }
 
