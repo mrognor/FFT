@@ -62,6 +62,46 @@ inline int64_t InverseNumber(int64_t number, int64_t numberSize)
     return res;
 }
 
+std::vector<complex> DFT(const std::vector<uint64_t>& x)
+{
+    std::vector<complex> X;
+    X.reserve(x.size());
+
+    for (uint64_t k = 0; k < x.size(); ++k)
+    {
+        complex step;
+        for (uint64_t n = 0; n < x.size(); ++n)
+        {
+            step.Re += x[n] * cos((2 * PI * k * n) / x.size());
+            step.Im -= x[n] * sin((2 * PI * k * n) / x.size());
+        }
+        X.emplace_back(step);
+    }
+    return X;
+}
+
+std::vector<complex> IDFT(const std::vector<complex>& X)
+{
+    std::vector<complex> x;
+    x.reserve(X.size());
+
+    for (uint64_t n = 0; n < X.size(); ++n)
+    {
+        complex step;
+        for (uint64_t k = 0; k < X.size(); ++k)
+        {
+            double re = cos((2 * PI * k * n) / X.size());
+            double im = sin((2 * PI * k * n) / X.size());
+            step.Re += X[k].Re * re - X[k].Im * im;
+            step.Im += X[k].Re * im + X[k].Im * re;
+        }
+        step.Im /= X.size();
+        step.Re /= X.size();
+        x.emplace_back(step);
+    }
+    return x;
+}
+
 template <class T>
 std::vector<complex> FFT(const std::vector<T>& x)
 {
@@ -188,20 +228,36 @@ std::vector<int64_t> IFFT(const std::vector<complex>& X, const uint64_t& dataLen
 
 int main()
 {
-    std::vector<int64_t> input;
-    std::vector<complex> fft;
-    std::vector<int64_t> ifft;
+    int elemCount = 30000;
 
-    for (int64_t i = 0; i < 65536; ++i)
-        input.emplace_back(rand());
+    std::vector<int64_t> fftInput;
+    std::vector<complex> res;
 
-    auto start(std::chrono::high_resolution_clock::now());
+    std::chrono::system_clock::time_point start, end;
 
-    fft = FFT<int64_t>(input);
+    for (int64_t i = 0; i < elemCount; ++i)
+        fftInput.emplace_back(rand());
 
-    auto end(std::chrono::high_resolution_clock::now());
-    auto duration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
+    start = std::chrono::high_resolution_clock::now();
 
-    std::cout << "Time to operations: " << duration.count() << std::endl;
-    std::cout << "Is all ok: " << (IFFT(fft, input.size()) == input) << std::endl;
+    res = FFT<int64_t>(fftInput);
+
+    end = std::chrono::high_resolution_clock::now();
+    auto fftDuration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
+
+    std::cout << "Time to fft operations: " << fftDuration.count() << std::endl;
+
+    std::vector<uint64_t> dtfInput;
+
+    for (int64_t i = 0; i < elemCount; ++i)
+        dtfInput.emplace_back(rand());
+
+    start = std::chrono::high_resolution_clock::now();
+
+    res = DFT(dtfInput);
+
+    end = std::chrono::high_resolution_clock::now();
+    auto dtfDuration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
+
+    std::cout << "Time to dtf operations: " << dtfDuration.count() << std::endl;
 }
