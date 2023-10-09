@@ -33,9 +33,10 @@ $$
 $$
 
 Матрица преобразования выглядит так:    
-$$
+
+```math
 {\mathcal {F}}={\frac {1}{\sqrt {n}}}{\begin{pmatrix}1&1&1&1&\ldots &1\\1&\omega _{n}&\omega _{n}^{2}&\omega _{n}^{3}&\ldots &\omega _{n}^{n-1}\\1&\omega _{n}^{2}&\omega _{n}^{4}&\omega _{n}^{6}&\ldots &\omega _{n}^{2(n-1)}\\1&\omega _{n}^{3}&\omega _{n}^{6}&\omega _{n}^{9}&\ldots &\omega _{n}^{3(n-1)}\\\vdots &\vdots &\vdots &\vdots &\ddots &\vdots \\1&\omega _{n}^{n-1}&\omega _{n}^{2(n-1)}&\omega _{n}^{3(n-1)}&\ldots &\omega _{n}^{(n-1)^{2}}\end{pmatrix}}
-$$
+```
 
 А элементы матрицы выглядят так:
 
