@@ -49,7 +49,6 @@ std::ostream& operator<<(std::ostream& stream, const complex& A)
     return stream;
 }
 
-
 inline int64_t InverseNumber(int64_t number, int64_t numberSize)
 {
     int64_t res = 0;
@@ -61,6 +60,46 @@ inline int64_t InverseNumber(int64_t number, int64_t numberSize)
     }
     res >>= 1;
     return res;
+}
+
+std::vector<complex> DFT(const std::vector<uint64_t>& x)
+{
+    std::vector<complex> X;
+    X.reserve(x.size());
+
+    for (uint64_t k = 0; k < x.size(); ++k)
+    {
+        complex step;
+        for (uint64_t n = 0; n < x.size(); ++n)
+        {
+            step.Re += x[n] * cos((2 * PI * k * n) / x.size());
+            step.Im -= x[n] * sin((2 * PI * k * n) / x.size());
+        }
+        X.emplace_back(step);
+    }
+    return X;
+}
+
+std::vector<complex> IDFT(const std::vector<complex>& X)
+{
+    std::vector<complex> x;
+    x.reserve(X.size());
+
+    for (uint64_t n = 0; n < X.size(); ++n)
+    {
+        complex step;
+        for (uint64_t k = 0; k < X.size(); ++k)
+        {
+            double re = cos((2 * PI * k * n) / X.size());
+            double im = sin((2 * PI * k * n) / X.size());
+            step.Re += X[k].Re * re - X[k].Im * im;
+            step.Im += X[k].Re * im + X[k].Im * re;
+        }
+        step.Im /= X.size();
+        step.Re /= X.size();
+        x.emplace_back(step);
+    }
+    return x;
 }
 
 template <class T>
@@ -167,14 +206,14 @@ std::vector<int64_t> IFFT(const std::vector<complex>& X, const uint64_t& dataLen
     uint64_t paddingLen = X.size() - dataLen;
 
     // If it was not padding append first element to start
-    if (paddingLen == 0) res.push_back(round(preRes[0].abs()) / preRes.size());
+    if (paddingLen == 0) res.emplace_back(round(preRes[0].abs()) / preRes.size());
 
     for (auto it = preRes.rbegin(); it != preRes.rend(); ++it)
     {
         // If it was padding go throw padding and append only after that
         // If it was not padding append all except last 
         if ((paddingLen != 0 && count >= paddingLen - 1) || (paddingLen == 0 && count < preRes.size() - 1)) 
-            res.push_back(round(it->abs()) / preRes.size());
+            res.emplace_back(round(it->abs()) / preRes.size());
         ++count;
     }
     
@@ -190,7 +229,7 @@ int main()
     std::vector<int64_t> ifft;
 
     for (int64_t i = 0; i < 65536; ++i)
-        input.push_back(rand());
+        input.emplace_back(rand());
 
     auto start(std::chrono::high_resolution_clock::now());
 
