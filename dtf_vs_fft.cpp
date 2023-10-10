@@ -21,6 +21,8 @@ struct complex
     friend complex operator-(const complex& A, const complex& B);
     friend complex operator*(const complex& A, const complex& B);
 
+    friend complex operator!=(const complex& A, const complex& B);
+
     friend std::ostream& operator<<(std::ostream& stream, const complex& A);
 
     double abs() const { return sqrt(Re * Re + Im * Im); }
@@ -48,6 +50,12 @@ std::ostream& operator<<(std::ostream& stream, const complex& A)
     stream << A.Im << "j";
     return stream;
 }
+
+complex operator!=(const complex& A, const complex& B)
+{
+    return ((A.Re == B.Re) && (A.Im == B.Im));
+}
+
 
 inline int64_t InverseNumber(int64_t number, int64_t numberSize)
 {

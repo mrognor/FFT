@@ -21,6 +21,8 @@ struct complex
     friend complex operator-(const complex& A, const complex& B);
     friend complex operator*(const complex& A, const complex& B);
 
+    friend complex operator!=(const complex& A, const complex& B);
+
     friend std::ostream& operator<<(std::ostream& stream, const complex& A);
 
     double abs() const { return sqrt(Re * Re + Im * Im); }
@@ -47,6 +49,11 @@ std::ostream& operator<<(std::ostream& stream, const complex& A)
     if (A.Im >= 0) stream << "+";
     stream << A.Im << "j";
     return stream;
+}
+
+complex operator!=(const complex& A, const complex& B)
+{
+    return ((A.Re == B.Re) && (A.Im == B.Im));
 }
 
 inline int64_t InverseNumber(int64_t number, int64_t numberSize)
@@ -198,10 +205,23 @@ int main()
     auto start(std::chrono::high_resolution_clock::now());
 
     fft = FFT<int64_t>(input);
+    ifft = (IFFT(fft, input.size()));
 
     auto end(std::chrono::high_resolution_clock::now());
     auto duration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
 
     std::cout << "Time to operations: " << duration.count() << std::endl;
-    std::cout << "Is all ok: " << (IFFT(fft, input.size()) == input) << std::endl;
+    
+    bool isOk = true;
+    for (int i = 0; i < fft.size(); ++i)
+    {
+        if (input[i] != ifft[i])
+        {
+            std::cout << "Input: " << input[i] << " IFFT: " << ifft[i] << " FFT: " << fft[i] << std::endl;
+            isOk = false;
+        }
+    }
+
+    if (isOk)
+        std::cout << "All ok" << std::endl;
 }
