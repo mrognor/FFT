@@ -76,11 +76,11 @@ std::vector<complex> FFT(const std::vector<T>& x)
     const int64_t arrLen = pow(2, recursiveLen);
 
     // Make vector length a multiple of the power of two
-    std::vector<complex> res(arrLen - x.size());
+    std::vector<complex> res(arrLen - x.size(), 0);
     res.insert(res.end(), x.begin(), x.end());
 
     int64_t newPos;
-    complex srcVal;
+    complex srcVal, tmp1;
 
     // Swap by reverse bit elements
     for (int64_t i = 0; i < arrLen; ++i)
@@ -155,12 +155,12 @@ std::vector<complex> FFT(const std::vector<T>& x)
         {
             for (int64_t k = 0; k < halfElem; ++k)
             {
-                tmp[j + k] = res[j + k] + w[k * (arrLen / elemCount)] * res[j + k + halfElem];
-                tmp[j + halfElem + k] = res[j + k] - w[k * (arrLen / elemCount)] * res[j + k + halfElem];
+                tmp1 = res[j + k] + w[k * (arrLen / elemCount)] * res[j + k + halfElem];
+                res[j + halfElem + k] = res[j + k] - w[k * (arrLen / elemCount)] * res[j + k + halfElem];
+                res[j + k] = tmp1;
             }
         }
 
-        res = tmp;
         elemCount <<= 1;
     }
 
