@@ -69,8 +69,11 @@ inline int64_t InverseNumber(int64_t number, int64_t numberSize)
     return res;
 }
 
+// Simpler realization. It's slower than the FFT function, 
+// but easier to understand, since FFT has more complex language constructs,
+// This realization didnt save w vector and consumes less RAM
 template <class T>
-std::vector<complex> FFT(const std::vector<T>& x)
+std::vector<complex> SFFT(const std::vector<T>& x)
 {
     const int64_t recursiveLen = ceil(log2(x.size()));
     const int64_t arrLen = pow(2, recursiveLen);
@@ -78,8 +81,8 @@ std::vector<complex> FFT(const std::vector<T>& x)
     // Make array with length a multiple of the power of two
     complex* arr = new complex[arrLen];
 
+    // Variable to safe new vector element in required array position 
     int64_t newPos;
-    complex srcVal, tmp1;
 
     // Swap by reverse bit elements
     for (int64_t i = 0; i < arrLen; ++i)
@@ -134,6 +137,9 @@ std::vector<complex> FFT(const std::vector<T>& x)
         w[w.size() - 2 * halfElem + i].Im = -w[i].Re;
     }
 
+    // Variable to swap elements inside array
+    complex tmp1;
+    // Internal pseudo recursion step equal internal cycle size
     int64_t elemCount = 2;
     // Recursion cycle
     for (int64_t i = 0; i < recursiveLen; ++i)
@@ -141,9 +147,10 @@ std::vector<complex> FFT(const std::vector<T>& x)
         // Calculate array with w
         halfElem = elemCount / 2;
 
-        // Iterate over all array by chunks with elemCount
+        // Pseudo recursion iterate over all array by chunks with elemCount
         for (int64_t j = 0; j < arrLen; j += elemCount)
         {
+            // Goes throw all chunks
             for (int64_t k = 0; k < halfElem; ++k)
             {
                 tmp1 = arr[j + k] + w[k * (arrLen / elemCount)] * arr[j + k + halfElem];
@@ -155,6 +162,133 @@ std::vector<complex> FFT(const std::vector<T>& x)
         elemCount <<= 1;
     }
 
+    std::vector<complex> res(arrLen);
+    for (int64_t i = 0; i < arrLen; ++i)
+        res[i] = arr[i];
+    delete[] arr;
+    return res;
+}
+
+template <class T>
+std::vector<complex> FFT(const std::vector<T>& x)
+{
+    const int64_t recursiveLen = ceil(log2(x.size()));
+    const int64_t arrLen = pow(2, recursiveLen);
+
+    // Static variable to store previusly arr len in previously function call.
+    // Required to save w if vector length didnt change in new function call
+    static int64_t lastArrLen = 0;
+
+    // Make array with length a multiple of the power of two
+    complex* arr = new complex[arrLen];
+
+    int64_t halfElem = arrLen / 8;
+
+    // Static vector to save w multipliers
+    static std::vector<complex> w;
+
+    // Static vector to save reversed bit positions
+    static std::vector<int> reversePositions;
+
+    // Check if we need to recalculate w vector and inverse vector
+    if (arrLen != lastArrLen)
+    {
+        w.resize(arrLen / 2);
+        reversePositions.resize(arrLen);
+
+        // Swap by reverse bit elements
+        for (int64_t i = 0; i < arrLen; ++i)
+            reversePositions[i] = InverseNumber(i, recursiveLen);
+
+        // Pre calculate constans W in complex circle
+        // Calculate 0 value
+        w[0].Re = 1;
+        w[0].Im = 0;
+
+        // Calculate middle value
+        w[arrLen / 4].Re = cos(2 * PI * (arrLen / 4) / arrLen);
+        w[arrLen / 4].Im = -sin(2 * PI * (arrLen / 4) / arrLen);
+
+        // First and fourth quad
+        //         |   x = 1
+        //         |  
+        //    -----------
+        //         |
+        //         |   x = 4
+        for (int64_t i = 1; i <= halfElem; ++i)
+        {
+            // 1 quad
+            w[i].Re = cos(2 * PI * i / arrLen);
+            w[i].Im = -sin(2 * PI * i / arrLen);
+
+            // 4 quad
+            w[w.size() - i].Re = -w[i].Re;
+            w[w.size() - i].Im = w[i].Im;
+        }
+
+        // Second and third quad
+        // 2 = x   |   
+        //         |  
+        //    -----------
+        //         |
+        // 3 = x   |   
+        for (int64_t i = 1; i < halfElem; ++i)
+        {
+            // 2 quad
+            w[halfElem + i].Re = -w[(halfElem - i) % halfElem].Im;
+            w[halfElem + i].Im = -w[(halfElem - i) % halfElem].Re;
+
+            // 3 quad
+            w[w.size() - 2 * halfElem + i].Re = w[i].Im;
+            w[w.size() - 2 * halfElem + i].Im = -w[i].Re;
+        }
+    }
+
+
+    // Internal pseudo recursion step equal internal cycle size
+    int64_t elemCount = 2;
+
+    // Variables to store pointers to array elements
+    complex* tmpPtr1; 
+    complex* tmpPtr2 = arr; // Save arr start to tmpPtr2 to iterate over array
+
+    // Save all elements from x to arr in required order
+    for (int64_t i = 0; i < arrLen; ++i)
+        *tmpPtr2++ = x[reversePositions[i]];
+    
+    // Variable to swap elements inside array
+    complex tmp1;
+
+    // Recursion cycle
+    for (int64_t i = 0; i < recursiveLen; ++i)
+    {
+        // Calculate array with w
+        halfElem = elemCount / 2;
+
+        // Iterate over all array by chunks with elemCount
+        for (int64_t j = 0; j < arrLen; j += elemCount)
+        {
+            tmpPtr1 = &arr[j]; // arr[j + k]
+            tmpPtr2 = &arr[j + halfElem]; // arr[j + k + halfElem]
+            
+            for (int64_t k = 0; k < halfElem; ++k)
+            {
+                // tmp1 = arr[j + k] + w[k * (arrLen / elemCount)] * arr[j + k + halfElem];
+                tmp1 = *tmpPtr1 + w[k * (arrLen / elemCount)] * *tmpPtr2;
+                // arr[j + halfElem + k] = arr[j + k] - w[k * (arrLen / elemCount)] * arr[j + k + halfElem];
+                *tmpPtr2 = *tmpPtr1 - w[k * (arrLen / elemCount)] * *tmpPtr2;
+                // arr[j + k] = tmp1;
+                *tmpPtr1 = tmp1;
+                ++tmpPtr1;
+                ++tmpPtr2;
+            }
+        }
+
+        elemCount <<= 1;
+    }
+
+    // Update static variable with last arr len
+    lastArrLen = arrLen;
     std::vector<complex> res(arrLen);
     for (int64_t i = 0; i < arrLen; ++i)
         res[i] = arr[i];
@@ -190,6 +324,7 @@ std::vector<int64_t> IFFT(const std::vector<complex>& X, const uint64_t& dataLen
 
 int main()
 {
+    // Important! No data padding. Length of input data must be power of 2.
     std::vector<int64_t> input;
     std::vector<complex> fft;
     std::vector<int64_t> ifft;
