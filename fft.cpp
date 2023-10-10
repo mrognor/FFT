@@ -204,14 +204,16 @@ int main()
 
     auto start(std::chrono::high_resolution_clock::now());
 
-    fft = FFT<int64_t>(input);
-    ifft = (IFFT(fft, input.size()));
+    for (int i = 0; i < 1000; ++i)
+        fft = FFT<int64_t>(input);
 
     auto end(std::chrono::high_resolution_clock::now());
     auto duration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
 
-    std::cout << "Time to operations: " << duration.count() << std::endl;
+    std::cout << "Time to operations: " << duration.count() / 1000 << std::endl;
     
+    ifft = (IFFT(fft, input.size()));
+
     bool isOk = true;
     for (int i = 0; i < fft.size(); ++i)
     {
