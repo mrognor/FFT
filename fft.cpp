@@ -75,9 +75,8 @@ std::vector<complex> FFT(const std::vector<T>& x)
     const int64_t recursiveLen = ceil(log2(x.size()));
     const int64_t arrLen = pow(2, recursiveLen);
 
-    // Make vector length a multiple of the power of two
-    std::vector<complex> res(arrLen - x.size(), 0);
-    res.insert(res.end(), x.begin(), x.end());
+    // Make array with length a multiple of the power of two
+    complex* arr = new complex[arrLen];
 
     int64_t newPos;
     complex srcVal, tmp1;
@@ -86,18 +85,10 @@ std::vector<complex> FFT(const std::vector<T>& x)
     for (int64_t i = 0; i < arrLen; ++i)
     {
         newPos = InverseNumber(i, recursiveLen);
-
-        // Check that we dont change element previosly and it is not equialent to starting value
-        if (i < newPos && newPos != i)
-        {
-            srcVal = res[i];
-            res[i] = res[newPos];
-            res[newPos] = srcVal;
-        }
+        arr[newPos] = x[i];
     }
 
     int64_t halfElem = arrLen / 8;
-    std::vector<complex> tmp(arrLen);
     std::vector<complex> w(arrLen / 2);
 
     // Pre calculate constans W in complex circle
@@ -155,15 +146,19 @@ std::vector<complex> FFT(const std::vector<T>& x)
         {
             for (int64_t k = 0; k < halfElem; ++k)
             {
-                tmp1 = res[j + k] + w[k * (arrLen / elemCount)] * res[j + k + halfElem];
-                res[j + halfElem + k] = res[j + k] - w[k * (arrLen / elemCount)] * res[j + k + halfElem];
-                res[j + k] = tmp1;
+                tmp1 = arr[j + k] + w[k * (arrLen / elemCount)] * arr[j + k + halfElem];
+                arr[j + halfElem + k] = arr[j + k] - w[k * (arrLen / elemCount)] * arr[j + k + halfElem];
+                arr[j + k] = tmp1;
             }
         }
 
         elemCount <<= 1;
     }
 
+    std::vector<complex> res(arrLen);
+    for (int64_t i = 0; i < arrLen; ++i)
+        res[i] = arr[i];
+    delete[] arr;
     return res;
 }
 
@@ -215,7 +210,7 @@ int main()
     ifft = (IFFT(fft, input.size()));
 
     bool isOk = true;
-    for (int i = 0; i < fft.size(); ++i)
+    for (std::size_t i = 0; i < fft.size(); ++i)
     {
         if (input[i] != ifft[i])
         {
@@ -226,4 +221,9 @@ int main()
 
     if (isOk)
         std::cout << "All ok" << std::endl;
+
+    // fft = FFT<int64_t>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15});
+
+    // for (auto it : fft)
+    //    std::cout << it << std::endl;
 }
