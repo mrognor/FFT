@@ -3,6 +3,7 @@
 #include <math.h>
 #include <bitset>
 #include <chrono>
+#include <fstream>
 
 namespace sc = std::chrono;
 
@@ -234,9 +235,22 @@ std::vector<int64_t> IFFT(const std::vector<complex>& X, const uint64_t& dataLen
     return res;
 }
 
-int main()
+void Bench(int elemCount, int loopCount = 1000)
 {
-    int elemCount = 30000;
+    static bool ifFirstCall = true;
+
+    std::ofstream file;
+
+    if (ifFirstCall)
+    {
+        file.open("dft_vs_fft.bench");
+        ifFirstCall = false;
+    }
+    else
+        file.open("dft_vs_fft.bench", std::ios::app);
+
+    if (!file.is_open())
+        std::cout << "Failed to open bench file" << std::endl;
 
     std::vector<int64_t> fftInput;
     std::vector<complex> res;
@@ -248,24 +262,44 @@ int main()
 
     start = std::chrono::high_resolution_clock::now();
 
-    res = FFT<int64_t>(fftInput);
+    for (int i = 0; i < loopCount; ++i)
+        res = FFT<int64_t>(fftInput);
 
     end = std::chrono::high_resolution_clock::now();
-    auto fftDuration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
+    auto fftDuration(std::chrono::duration_cast<std::chrono::microseconds>((end - start) / loopCount));
+    
+    std::cout << "Time to fft operations: " << fftDuration.count() << "\t";
+    
+    if (file.is_open())
+        file << "vector size: " << elemCount << "\tfft time: " << fftDuration.count();
 
-    std::cout << "Time to fft operations: " << fftDuration.count() << std::endl;
-
-    std::vector<uint64_t> dtfInput;
+    std::vector<uint64_t> dftInput;
 
     for (int64_t i = 0; i < elemCount; ++i)
-        dtfInput.emplace_back(rand());
+        dftInput.emplace_back(rand());
 
     start = std::chrono::high_resolution_clock::now();
 
-    res = DFT(dtfInput);
+    for (int i = 0; i < loopCount; ++i)
+        res = DFT(dftInput);
 
     end = std::chrono::high_resolution_clock::now();
-    auto dtfDuration(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start));
+    auto dftDuration(std::chrono::duration_cast<std::chrono::microseconds>((end - start) / loopCount));
 
-    std::cout << "Time to dtf operations: " << dtfDuration.count() << std::endl;
+    std::cout << "Time to dft operations: " << dftDuration.count() << std::endl;
+
+    if (file.is_open())
+        file << "\tdft time: " << dftDuration.count() << std::endl;
+
+    file.close();
+}
+
+
+// Benchmark
+int main()
+{
+    std::vector<int> vectorSizes = {500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 30000, 40000, 50000, 100000};
+
+    for (auto it : vectorSizes)
+        Bench(it);
 }
