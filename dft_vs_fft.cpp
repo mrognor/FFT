@@ -235,7 +235,7 @@ std::vector<int64_t> IFFT(const std::vector<complex>& X, const uint64_t& dataLen
     return res;
 }
 
-void Bench(int elemCount, int loopCount = 1000)
+void Bench(int elemCount, int loopCount = 100)
 {
     static bool ifFirstCall = true;
 
@@ -298,7 +298,14 @@ void Bench(int elemCount, int loopCount = 1000)
 // Benchmark
 int main()
 {
-    std::vector<int> vectorSizes = {500, 1000, 2000, 3000, 4000, 5000, 10000, 20000, 30000, 40000, 50000, 100000};
+    // std::vector<int> vectorSizes = {512, 1024, 2048, 4096, 8192, 16384, 32768, 65536};
+    std::vector<int> vectorSizes;
+    int a = 512;
+    for (int i = 0; i < 8; ++i)
+    { 
+        vectorSizes.push_back(a);
+        a *= 2;
+    }
 
     for (auto it : vectorSizes)
         Bench(it);
