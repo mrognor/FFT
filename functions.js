@@ -3,10 +3,13 @@ function plot() {
     const sinArg = document.getElementById('range').value;
     const polarRatio = document.getElementById('polar-range').value;
 
+    // Const to set sinus length
+    const sinLen = 6;
+
     // Graphics axis names
-    const layout = { 
-        xaxis: { title: 'X-axis' }, 
-        yaxis: { title: 'Y-axis' }, 
+    var layout = { 
+        xaxis: { title: 'X-axis', range: [0, sinLen * Math.PI] }, 
+        yaxis: { title: 'Y-axis', range: [-1, 1]}
     }; 
 
     // Plot base sin
@@ -14,12 +17,12 @@ function plot() {
     graph.innerHTML = ''; 
 
     var xValues = [];
-    for (let i = 0; i <= 6 * Math.PI; i += 0.01) {
+    for (let i = 0; i <= sinLen * Math.PI; i += 0.01) {
         xValues.push(i);
     }
 
     var yValues = [];
-    for (let i = 0; i <= 6 * Math.PI; i += 0.01) {
+    for (let i = 0; i <= sinLen * Math.PI; i += 0.01) {
         yValues.push(Math.sin(sinArg * i));
     } 
 
@@ -45,6 +48,14 @@ function plot() {
         xPolarValues.push(yValues[i] * Math.sin(xValues[i] * polarRatio));
         yPolarValues.push(yValues[i] * Math.cos(xValues[i] * polarRatio));
     }
+
+    layout = { 
+        autosize: false,
+        width: 500,
+        height: 500,
+        xaxis: { title: 'X-axis', range: [-1.1, 1.1] }, 
+        yaxis: { title: 'Y-axis', range: [-1.1, 1.1]}
+    }; 
 
     trace = { 
         x: xPolarValues, 
