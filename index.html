@@ -25,31 +25,76 @@
 
 	<!-- Include site functions -->
 	<script src="functions.js"></script>
+
+    <!-- Include mathjax -->
+    <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head> 
 
-<body onload="plot()" onresize="plot()">
+<body onload="pageLoad();" onresize="pageResize();">
 	<!-- Include bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   
-	<div class="container"> 
-		<div class="graph" id="graph"></div>
-		<label for="range" class="form-label" id="graph-label">Частота синусоиды</label>
-		<input type="range" class="form-range" min="1" max="6" step="0.1" id="range" oninput="plot()">
+    <!-- Main container -->
+	<div class="container">
+        <h1>
+            Преобразование Фурье.
+        </h1>
+        
+        <p>
+            Здравствуйте! В этой статье я расскажу про преобразование Фурье и его быструю версию.
+            Целью этой статьи является максимально полное и понятное объяснение этого преобразования.
+            Я начну с вывода самого преобразования, затем расскажу про дискретное преобразование и закончу быстрым.
+            Для быстрого и дискретного будут представлены реализации на <i>C++</i> и <i>Python</i>.
+        </p>
 
-		<div class="container">
-			<div class="row">
-			  	<div class="col-md-auto">
-					<div class="graph" id="polar-graph"></div>
-			  	</div>
-			  	<div class="col-sm">
-					<div class="graph" id="mass-graph"></div>
-			  	</div>
-			</div>
-		</div>
-		
+        <h2>
+            Вывод преобразования Фурье.
+        </h2>
+
+        <p>
+            Для начала возьмем стандартный гармонический сигнал <i>sin</i>.
+        </p>
+        
+        <div class="graph" id="cartesian-sin-graph-first"></div>
+        
+        <p>
+            Сигнал бесконечный и периодический. В данном случае частота <i>sin</i> равна 1.
+        </p>
+
+        <p>
+            Для описания такого сигнала можно использовать полярные координаты, так как в них график не будет бесконечным и работа с ним будет проще.
+        </p>
+
+        <p>
+            Для этого можно воспользоваться следующими формулами:
+            \[polarX = sin(y) * sin(x)\] 
+            и
+            \[polarY = sin(y) * cos(x)\]
+            где x это аргумент функции, а y значение синуса в точке x.
+        </p>
+        
+        <div class="graph" id="polar-sin-graph-first"></div>
+        
+        <p>
+            Не слишком информативно, так как получился простой круг, с диаметром 1. Более того, совершенно не важно чему равна частота сигнала,
+            круг всегда будет одинаковым. Однако перевод в полярные координаты можно осуществить несколько иначе. 
+        </p>
+
+        <div class="graph" id="polar-sin-graph-second"></div>
+
 		<label for="range" class="form-label" id="polar-label">Частота намотки</label>
-		<input type="range" class="form-range" min="1" max="6" step="0.1" id="polar-range" oninput="plot()">
-	</div> 
+		<input type="range" class="form-range" min="0.0" max="6" step="0.01" value="0.0" id="polar-sin-range-second" oninput="plotSecond()">
+
+
+        <p>
+            
+        </p>
+
+        <p>
+            Эта глава была сделана на основе <a href="https://youtu.be/spUNpyF58BY?si=lzh6EQ17LpGZICyf">видео</a> с канала <i>3Blue1Brown</i>
+        </p>
+	</div>
 </body> 
 
 </html>
