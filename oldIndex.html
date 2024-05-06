@@ -24,10 +24,10 @@
 	<link href="styles.css" rel="stylesheet">
 
 	<!-- Include site functions -->
-	<script src="functions.js"></script>
+	<script src="oldFunctions.js"></script>
 </head> 
 
-<body onload="plot()" onresize="plot()">
+<body onload="plot(); secondPlot();" onresize="plot(); secondPlot();">
 	<!-- Include bootstrap -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   
@@ -49,6 +49,22 @@
 		
 		<label for="range" class="form-label" id="polar-label">Частота намотки</label>
 		<input type="range" class="form-range" min="1" max="6" step="0.1" id="polar-range" oninput="plot()">
+
+
+		<div class="graph" id="second-graph"></div>
+		<div class="container">
+			<div class="row">
+			  	<div class="col-md-auto">
+					<div class="graph" id="second-polar-graph"></div>
+			  	</div>
+			  	<div class="col-sm">
+					<div class="graph" id="second-mass-graph"></div>
+			  	</div>
+			</div>
+		</div>
+		
+		<label for="range" class="form-label" id="second-polar-label">Частота намотки</label>
+		<input type="range" class="form-range" min="1" max="6" step="0.1" id="second-polar-range" oninput="secondPlot()">
 	</div> 
 </body> 
 
