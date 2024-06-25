@@ -13,7 +13,7 @@ function plotFirst() {
     var SinArgs = [];
     var SinValues = [];
 
-    for (let i = 0; i <= SinMaxArg * Math.PI; i += 0.01) {
+    for (let i = 0; i <= StaticSinMaxArg * Math.PI; i += 0.01) {
         SinArgs.push(i);
         SinValues.push(Math.sin(i));
     }
@@ -27,7 +27,7 @@ function plotFirst() {
     }; 
 
     var layout = { 
-        xaxis: { title: 'X-axis', range: [0, SinMaxArg * Math.PI + 0.5], fixedrange: true}, 
+        xaxis: { title: 'X-axis', range: [0, StaticSinMaxArg * Math.PI + 0.5], fixedrange: true}, 
         yaxis: { title: 'Y-axis', fixedrange: true},
     }; 
 
@@ -69,7 +69,7 @@ function plotSecond() {
     var SinArgs = [];
     var SinValues = [];
 
-    for (let i = 0; i <= SinMaxArg * Math.PI; i += 0.01) {
+    for (let i = 0; i <= StaticSinMaxArg * Math.PI; i += 0.01) {
         SinArgs.push(i);
         SinValues.push(Math.sin(i));
     }
